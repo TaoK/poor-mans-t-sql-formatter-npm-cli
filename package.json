@@ -1,0 +1,40 @@
+{
+  "name": "poor-mans-t-sqlformatter-cli",
+  "version": "1.6.2",
+  "description": "A T-SQL formatting utility in JS, transpiled from the C# library of the same name.",
+  "bin": {
+    "sqlformat": "./index.js"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TaoK/poor-mans-t-sql-formatter-npm-cli.git"
+  },
+  "keywords": [
+    "sql",
+    "formatter",
+    "sql formatter",
+    "tsql",
+    "formatting",
+    "minimizer",
+    "obfuscator",
+    "pretty-printer"
+  ],
+  "author": "Tao Klerks <tao@klerks.biz> (http://architectshack.com/)",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/TaoK/poor-mans-t-sql-formatter-npm-cli/issues"
+  },
+  "homepage": "https://github.com/TaoK/poor-mans-t-sql-formatter-npm-cli#readme",
+  "dependencies": {
+    "commander": "2.11.0",
+    "file-or-stdin": "1.0.2"
+  },
+  "devDependencies": {
+    "chai": "4.1.2",
+    "cross-spawn": "5.1.0",
+    "mocha": "4.0.1"
+  }
+}
