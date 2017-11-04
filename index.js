@@ -9,11 +9,11 @@ const cmdLineUtil = require('./cmdLineUtil');
 //call the lib, passing in all the "process" bits (statics) that we don't want to go messing with when testing.
 cmdLineUtil(process.argv, process.stdin, process.stdout)
   .then(result => {
-    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stdout) process.stdout.write(result.stdout, result.encoding);
     if (result.stderr) process.stderr.write(result.stderr);
     process.exit(result.exitCode);
   })
   .catch(err => {
     console.error(err);
-    process.exit(2);
+    process.exit(3);
   });

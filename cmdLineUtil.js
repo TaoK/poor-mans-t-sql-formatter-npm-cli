@@ -1,6 +1,7 @@
 const sqlFormatterLib = require('poor-mans-t-sql-formatter');
 const fosi = require('file-or-stdin');
 const fs = require('fs')
+const strip = require('strip-bom')
 
 //A few significant differences from Library to CLI tool:
 // - Need abbreviations for the options (well, not "need", but convenient)
@@ -10,8 +11,8 @@ const fs = require('fs')
 // -> Because of this need to "sanity check" options, we're going to use a whitelist approach
 const optionMap = {
   indent:                    {abbrev: 'd' },
-  spacesPerTab:              {abbrev: 's' },
   maxLineWidth:              {abbrev: 'm' },
+  spacesPerTab:              {abbrev: 's' },
   statementBreaks:           {abbrev: 'b' },
   clauseBreaks:              {abbrev: 'l' },
   expandCommaLists:          {abbrev: 'c' },
@@ -69,8 +70,12 @@ function runCmdLineUtil(args, stdin, stdout) {
   commander.version(pckgJson.version);
   commander.description(pckgJson.description);
 
+  commander.option("-f, --inputFile <filename>", "Read input to be formatted from a file rather than stdin (typed or piped input)");
+  commander.option("-g, --outputFile <filename>", "Write formatted output to a file rather than stdout - generally equivalent to shell redirection");
   commander.option("-e, --ignoreErrors", "Return 0 (success) exit code even if parsing failed (and so the formatted output is suspect)");
-  commander.option("--encoding", "Use a specific character encoding [utf-8]");
+  commander.option("--inputEncoding <encoding>", "Use a specific character encoding supported by node for input - basically utf-16le or [utf-8]");
+  commander.option("--outputEncoding <encoding>", "Use a specific character encoding supported by node for output - basically utf-16le or [utf-8]");
+  commander.option("--forceOutputBOM", "Add a byte order mark (BOM) to the start of the output");
   mapOption('errorOutputPrefix', commander);
   
   //set up default options (for standard formatting)
@@ -89,36 +94,56 @@ function runCmdLineUtil(args, stdin, stdout) {
   //actually parse/process the options with the passed-in args - regardless of whether those are really from the command-line, or from test
   // WARNING: even though the intent was to make this code testable in-process, commander actually messes with process stuff - so we now use "spawn" for testing.
   commander.parse(args);
-  
-  //TEST: dump obfuscation options
-  //if (obfuscationSelected) {
-  //  console.log("dumping all option names on 'obfuscCommand'");
-  //  for (var optionName in sqlFormatterLib.optionReference) {
-  //    console.log(optionName + ": " + obfuscCommand[optionName]);
-  //  }
-  //  console.log("dumping args: " + obfuscCommand['args']);
-  //}
-  
-  //TEST: dump regular options
-  //console.log("dumping all option names on 'Commander'");
-  //for (var optionName in sqlFormatterLib.optionReference) {
-  //  console.log(optionName + ": " + commander[optionName]);
-  //}
-  //console.log("dumping args: " + commander['args'][0] + ", and then ");
-  //console.log(commander['args'][1]);
 
-  var filename = commander.args[0];
-  var encoding = commander.encoding || 'utf-8';
+  //to find "leftovers", need to filter out any "commands" that end up in the same args array
+  var stringArgs = commander.args.filter(a => typeof a === 'string');
+
+  if (stringArgs.length > 0)
+    throw new Error("Unexpected/unrecognized command-line input/argument");
+  
+  var filename = commander.inputFile;
+  var inputEncoding = commander.inputEncoding || 'utf-8';
+  var outputEncoding = commander.outputEncoding || 'utf-8';
+
+  //create set of defined options for formatter lib
+  var setOptions = {};
+  for (var optionName in sqlFormatterLib.optionReference) {
+    if (commander[optionName] != undefined) 
+      setOptions[optionName] = commander[optionName];
+    else if (obfuscCommand[optionName] != undefined)
+      setOptions[optionName] = obfuscCommand[optionName];
+  }
+  if (obfuscationSelected)
+    setOptions.formattingType = 'obfuscation';
+  else
+    setOptions.formattingType = 'standard';
   
   //Actually format! (return promise for error-handling / testing)
-  return fosi(filename, encoding).then(function(inputSql){
-    var libResult = sqlFormatterLib.formatSql(inputSql);
+  return fosi(filename, inputEncoding).then(function(inputSql){
 
-    var cmdResult = {exitCode: 0, stdout: libResult.text };
+    inputSql = strip(inputSql);
+    var libResult = sqlFormatterLib.formatSql(inputSql, setOptions);
+
+    var cmdResult = {};
 
     if (!commander.ignoreErrors && libResult.errorFound) {
-      cmdResult.exitCode = 1;
-      cmdResult.stderr = (cmdResult.stderr || "") + "Parsing errors found. Result may be unsafely / unexpectedly modified.";
+      cmdResult.exitCode = 2;
+      cmdResult.stderr = (cmdResult.stderr || "") + "Parsing errors found. Stdout result may be unsafely / unexpectedly modified.";
+    } else {
+      cmdResult.exitCode = 0;
+    }
+
+    var finalText = (commander.forceOutputBOM ? '\ufeff' : "") + libResult.text;
+
+    if (commander.outputFile) {
+      if (!libResult.errorFound || commander.ignoreErrors) {
+        fs.writeFileSync(commander.outputFile, finalText, outputEncoding, function(err){
+          throw err;
+        });
+      }
+    } else {
+      cmdResult.stdout = finalText;
+      cmdResult.encoding = outputEncoding;
     }
 
     return cmdResult;

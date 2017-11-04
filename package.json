@@ -1,6 +1,6 @@
 {
   "name": "poor-mans-t-sqlformatter-cli",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "A T-SQL formatting utility in JS, transpiled from the C# library of the same name.",
   "bin": {
     "sqlformat": "./index.js"
@@ -30,11 +30,13 @@
   "homepage": "https://github.com/TaoK/poor-mans-t-sql-formatter-npm-cli#readme",
   "dependencies": {
     "commander": "2.11.0",
-    "file-or-stdin": "1.0.2"
+    "file-or-stdin": "1.0.2",
+    "strip-bom": "3.0.0"
   },
   "devDependencies": {
     "chai": "4.1.2",
     "cross-spawn": "5.1.0",
-    "mocha": "4.0.1"
+    "mocha": "4.0.1",
+    "temporary": "0.0.8"
   }
 }
