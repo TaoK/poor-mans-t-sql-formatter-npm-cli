@@ -2,8 +2,8 @@
 
 A command-line SQL formatter that runs in pretty much any environment (as long as node.js is installed).
 
-It is based on the Poor Man's T-SQL Formatter NPM package (poor-mans-t-sqlformatter), which in turn is based 
-on the C# library of the same name (https://github.com/TaoK/PoorMansTSqlFormatter).
+It is based on the Poor Man's T-SQL Formatter NPM package (poor-mans-t-sql-formatter), which in turn is based 
+on the C# library of the same name ( https://github.com/TaoK/PoorMansTSqlFormatter ).
 
 This formatter should be equivalent in functionality to the C# command-line formatter that's existed for a few years 
 (downloadable at http://architectshack.com/PoorMansTSqlFormatter.ashx), with two major differences:
@@ -16,7 +16,7 @@ This formatter should be equivalent in functionality to the C# command-line form
 (assuming node.js is installed)
 
 ```
-npm install --global poor-mans-t-sqlformatter-cli
+npm install --global poor-mans-t-sql-formatter-cli
 ```
 
 ## Usage
