@@ -76,7 +76,7 @@ following unixey command-line parameter conventions)
 | --expandInLists               | Should IN() lists have each argument on a new line?                                      | bool   |            |
 | --breakJoinOnSections         | Should the ON section of a JOIN clause be broken out onto its own line?                  | bool   |            |
 | --no-uppercaseKeywords        | Should T-SQL keywords (like SELECT, FROM) be automatically uppercased?                   | bool   |            |
-| --keywordStandardization      | Should the ON section of a JOIN clause be broken out onto its own line?                  | bool   |            |
+| --keywordStandardization      | Should less-common T-SQL keywords be replaced with their standard counterparts? (NOTE: only safe for T-SQL!) | bool   |            |
 
 Obfuscating formatter ("min" command) options:
 
